@@ -1,0 +1,11 @@
+# Visual Studio / IDE folders
+.vs/
+.vscode/
+*.user
+
+# Build results
+[Bb]in/
+[Oo]bj/
+
+# User-specific configuration
+appsettings.Development.json

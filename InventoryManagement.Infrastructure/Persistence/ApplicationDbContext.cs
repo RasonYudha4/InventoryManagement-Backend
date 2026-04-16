@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using InventoryManagement.Application.Interfaces;
 using InventoryManagement.Domain.Common;
 using InventoryManagement.Domain.Entities;
 using Microsoft.AspNetCore.Http;
@@ -10,7 +11,7 @@ using InventoryManagement.Infrastructure.Identity;
 
 namespace InventoryManagement.Infrastructure.Persistence;
 
-public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplicationDbContext
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
 
@@ -23,7 +24,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<Supplier> Suppliers => Set<Supplier>();
-    public DbSet<Product> products => Set<Product>();
+    public DbSet<Product> Products => Set<Product>();
     public DbSet<Warehouse> Warehouses => Set<Warehouse>();
     public DbSet<Location> Locations => Set<Location>();
     public DbSet<StockLevel> StockLevels => Set<StockLevel>();
@@ -131,5 +132,26 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.Entity<Category>().HasQueryFilter(c => !c.IsDeleted);
         builder.Entity<Supplier>().HasQueryFilter(s => !s.IsDeleted);
         builder.Entity<Warehouse>().HasQueryFilter(w => !w.IsDeleted);
+    
+        // 1. Don't let deleting a Product delete historical PO Lines
+        builder.Entity<PurchaseOrderLine>()
+            .HasOne(pol => pol.Product)
+            .WithMany(p => p.PurchaseOrderLines)
+            .HasForeignKey(pol => pol.ProductId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // 2. Don't let deleting a Supplier delete historical POs
+        builder.Entity<PurchaseOrder>()
+            .HasOne(po => po.Supplier)
+            .WithMany(s => s.PurchaseOrders)
+            .HasForeignKey(po => po.SupplierId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // 3. Don't let deleting a Product delete historical Stock Transactions
+        builder.Entity<StockTransaction>()
+            .HasOne(st => st.Product)
+            .WithMany(p => p.Transactions)
+            .HasForeignKey(st => st.ProductId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
