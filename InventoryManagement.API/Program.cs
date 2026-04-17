@@ -1,8 +1,10 @@
 using FluentValidation;
+using InventoryManagement.API.BackgroundJobs;
 using InventoryManagement.Application.Features.Stock.Commands.ReceiveStock;
 using InventoryManagement.Application.Interfaces;
 using InventoryManagement.Infrastructure.Identity;
 using InventoryManagement.Infrastructure.Persistence;
+using InventoryManagement.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -14,9 +16,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApplicationDbContext>(options => 
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddHostedService<LowStockAlertWorker>();
 builder.Services.AddScoped<InventoryManagement.API.Authentication.TokenService>();
 builder.Services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
 builder.Services.AddScoped<ICurrentUserService, InventoryManagement.API.Services.CurrentUserService>();
+builder.Services.AddScoped<IEmailService, MockEmailService>();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddIdentityCore<ApplicationUser>()
