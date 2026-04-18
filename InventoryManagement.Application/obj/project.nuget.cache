@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "dbxBv4ZIUhM=",
+  "dgSpecHash": "8Vx9yAMpQOo=",
   "success": true,
   "projectFilePath": "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement - Backend\\InventoryManagement.Application\\InventoryManagement.Application.csproj",
   "expectedPackageFiles": [
@@ -24,7 +24,9 @@
     "C:\\Users\\RASON YUDHAPATI\\.nuget\\packages\\microsoft.identitymodel.abstractions\\8.14.0\\microsoft.identitymodel.abstractions.8.14.0.nupkg.sha512",
     "C:\\Users\\RASON YUDHAPATI\\.nuget\\packages\\microsoft.identitymodel.jsonwebtokens\\8.14.0\\microsoft.identitymodel.jsonwebtokens.8.14.0.nupkg.sha512",
     "C:\\Users\\RASON YUDHAPATI\\.nuget\\packages\\microsoft.identitymodel.logging\\8.14.0\\microsoft.identitymodel.logging.8.14.0.nupkg.sha512",
-    "C:\\Users\\RASON YUDHAPATI\\.nuget\\packages\\microsoft.identitymodel.tokens\\8.14.0\\microsoft.identitymodel.tokens.8.14.0.nupkg.sha512"
+    "C:\\Users\\RASON YUDHAPATI\\.nuget\\packages\\microsoft.identitymodel.tokens\\8.14.0\\microsoft.identitymodel.tokens.8.14.0.nupkg.sha512",
+    "C:\\Users\\RASON YUDHAPATI\\.nuget\\packages\\microsoft.netcore.app.runtime.linux-x64\\10.0.3\\microsoft.netcore.app.runtime.linux-x64.10.0.3.nupkg.sha512",
+    "C:\\Users\\RASON YUDHAPATI\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.linux-x64\\10.0.3\\microsoft.aspnetcore.app.runtime.linux-x64.10.0.3.nupkg.sha512"
   ],
   "logs": [
     {
@@ -36,7 +38,8 @@
       "filePath": "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement - Backend\\InventoryManagement.Application\\InventoryManagement.Application.csproj",
       "libraryId": "AutoMapper",
       "targetGraphs": [
-        "net10.0"
+        "net10.0",
+        "net10.0/linux-x64"
       ]
     }
   ]

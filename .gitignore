@@ -3,9 +3,11 @@
 .vscode/
 *.user
 
-# Build results
-[Bb]in/
-[Oo]bj/
+# Ignore compiled build output
+[Pp]ublish/
+bin/
+obj/
 
 # User-specific configuration
+appsettings.json
 appsettings.Development.json

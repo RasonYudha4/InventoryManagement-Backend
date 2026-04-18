@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "b1SZWb0/4oA=",
+  "dgSpecHash": "2BoB0tYplDY=",
   "success": true,
   "projectFilePath": "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement - Backend\\InventoryManagement.Infrastructure\\InventoryManagement.Infrastructure.csproj",
   "expectedPackageFiles": [
@@ -83,7 +83,9 @@
     "C:\\Users\\RASON YUDHAPATI\\.nuget\\packages\\system.identitymodel.tokens.jwt\\7.7.1\\system.identitymodel.tokens.jwt.7.7.1.nupkg.sha512",
     "C:\\Users\\RASON YUDHAPATI\\.nuget\\packages\\system.memory.data\\8.0.1\\system.memory.data.8.0.1.nupkg.sha512",
     "C:\\Users\\RASON YUDHAPATI\\.nuget\\packages\\system.security.cryptography.pkcs\\9.0.4\\system.security.cryptography.pkcs.9.0.4.nupkg.sha512",
-    "C:\\Users\\RASON YUDHAPATI\\.nuget\\packages\\system.security.cryptography.protecteddata\\9.0.4\\system.security.cryptography.protecteddata.9.0.4.nupkg.sha512"
+    "C:\\Users\\RASON YUDHAPATI\\.nuget\\packages\\system.security.cryptography.protecteddata\\9.0.4\\system.security.cryptography.protecteddata.9.0.4.nupkg.sha512",
+    "C:\\Users\\RASON YUDHAPATI\\.nuget\\packages\\microsoft.netcore.app.runtime.linux-x64\\10.0.3\\microsoft.netcore.app.runtime.linux-x64.10.0.3.nupkg.sha512",
+    "C:\\Users\\RASON YUDHAPATI\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.linux-x64\\10.0.3\\microsoft.aspnetcore.app.runtime.linux-x64.10.0.3.nupkg.sha512"
   ],
   "logs": [
     {
@@ -95,7 +97,8 @@
       "filePath": "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement - Backend\\InventoryManagement.Infrastructure\\InventoryManagement.Infrastructure.csproj",
       "libraryId": "AutoMapper",
       "targetGraphs": [
-        "net10.0"
+        "net10.0",
+        "net10.0/linux-x64"
       ]
     }
   ]
