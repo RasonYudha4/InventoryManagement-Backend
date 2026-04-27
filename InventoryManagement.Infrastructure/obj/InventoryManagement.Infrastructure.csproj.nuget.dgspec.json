@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement - Backend\\InventoryManagement.Infrastructure\\InventoryManagement.Infrastructure.csproj": {}
+    "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement\\InventoryManagement.Infrastructure\\InventoryManagement.Infrastructure.csproj": {}
   },
   "projects": {
-    "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement - Backend\\InventoryManagement.Application\\InventoryManagement.Application.csproj": {
+    "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement\\InventoryManagement.Application\\InventoryManagement.Application.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement - Backend\\InventoryManagement.Application\\InventoryManagement.Application.csproj",
+        "projectUniqueName": "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement\\InventoryManagement.Application\\InventoryManagement.Application.csproj",
         "projectName": "InventoryManagement.Application",
-        "projectPath": "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement - Backend\\InventoryManagement.Application\\InventoryManagement.Application.csproj",
+        "projectPath": "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement\\InventoryManagement.Application\\InventoryManagement.Application.csproj",
         "packagesPath": "C:\\Users\\RASON YUDHAPATI\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement - Backend\\InventoryManagement.Application\\obj\\",
+        "outputPath": "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement\\InventoryManagement.Application\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\RASON YUDHAPATI\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -26,8 +26,8 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement - Backend\\InventoryManagement.Domain\\InventoryManagement.Domain.csproj": {
-                "projectPath": "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement - Backend\\InventoryManagement.Domain\\InventoryManagement.Domain.csproj"
+              "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement\\InventoryManagement.Domain\\InventoryManagement.Domain.csproj": {
+                "projectPath": "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement\\InventoryManagement.Domain\\InventoryManagement.Domain.csproj"
               }
             }
           }
@@ -84,16 +84,6 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.AspNetCore.App.Runtime.linux-x64",
-              "version": "[10.0.3, 10.0.3]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Runtime.linux-x64",
-              "version": "[10.0.3, 10.0.3]"
-            }
-          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
@@ -375,21 +365,16 @@
             "System.Xml.XPath.XDocument": "(,5.0.32767]"
           }
         }
-      },
-      "runtimes": {
-        "linux-x64": {
-          "#import": []
-        }
       }
     },
-    "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement - Backend\\InventoryManagement.Domain\\InventoryManagement.Domain.csproj": {
+    "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement\\InventoryManagement.Domain\\InventoryManagement.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement - Backend\\InventoryManagement.Domain\\InventoryManagement.Domain.csproj",
+        "projectUniqueName": "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement\\InventoryManagement.Domain\\InventoryManagement.Domain.csproj",
         "projectName": "InventoryManagement.Domain",
-        "projectPath": "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement - Backend\\InventoryManagement.Domain\\InventoryManagement.Domain.csproj",
+        "projectPath": "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement\\InventoryManagement.Domain\\InventoryManagement.Domain.csproj",
         "packagesPath": "C:\\Users\\RASON YUDHAPATI\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement - Backend\\InventoryManagement.Domain\\obj\\",
+        "outputPath": "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement\\InventoryManagement.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\RASON YUDHAPATI\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -432,16 +417,6 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.AspNetCore.App.Runtime.linux-x64",
-              "version": "[10.0.3, 10.0.3]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Runtime.linux-x64",
-              "version": "[10.0.3, 10.0.3]"
-            }
-          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
@@ -723,21 +698,16 @@
             "System.Xml.XPath.XDocument": "(,5.0.32767]"
           }
         }
-      },
-      "runtimes": {
-        "linux-x64": {
-          "#import": []
-        }
       }
     },
-    "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement - Backend\\InventoryManagement.Infrastructure\\InventoryManagement.Infrastructure.csproj": {
+    "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement\\InventoryManagement.Infrastructure\\InventoryManagement.Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement - Backend\\InventoryManagement.Infrastructure\\InventoryManagement.Infrastructure.csproj",
+        "projectUniqueName": "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement\\InventoryManagement.Infrastructure\\InventoryManagement.Infrastructure.csproj",
         "projectName": "InventoryManagement.Infrastructure",
-        "projectPath": "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement - Backend\\InventoryManagement.Infrastructure\\InventoryManagement.Infrastructure.csproj",
+        "projectPath": "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement\\InventoryManagement.Infrastructure\\InventoryManagement.Infrastructure.csproj",
         "packagesPath": "C:\\Users\\RASON YUDHAPATI\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement - Backend\\InventoryManagement.Infrastructure\\obj\\",
+        "outputPath": "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement\\InventoryManagement.Infrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\RASON YUDHAPATI\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -752,8 +722,8 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement - Backend\\InventoryManagement.Application\\InventoryManagement.Application.csproj": {
-                "projectPath": "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement - Backend\\InventoryManagement.Application\\InventoryManagement.Application.csproj"
+              "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement\\InventoryManagement.Application\\InventoryManagement.Application.csproj": {
+                "projectPath": "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement\\InventoryManagement.Application\\InventoryManagement.Application.csproj"
               }
             }
           }
@@ -788,6 +758,10 @@
               "target": "Package",
               "version": "[10.0.6, )"
             },
+            "Microsoft.SemanticKernel": {
+              "target": "Package",
+              "version": "[1.74.0, )"
+            },
             "Serilog.AspNetCore": {
               "target": "Package",
               "version": "[10.0.0, )"
@@ -808,16 +782,6 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.AspNetCore.App.Runtime.linux-x64",
-              "version": "[10.0.3, 10.0.3]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Runtime.linux-x64",
-              "version": "[10.0.3, 10.0.3]"
-            }
-          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
@@ -1098,11 +1062,6 @@
             "System.Xml.XPath": "(,4.3.32767]",
             "System.Xml.XPath.XDocument": "(,5.0.32767]"
           }
-        }
-      },
-      "runtimes": {
-        "linux-x64": {
-          "#import": []
         }
       }
     }

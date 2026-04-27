@@ -21,6 +21,7 @@ builder.Services.AddScoped<InventoryManagement.API.Authentication.TokenService>(
 builder.Services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
 builder.Services.AddScoped<ICurrentUserService, InventoryManagement.API.Services.CurrentUserService>();
 builder.Services.AddScoped<IEmailService, MockEmailService>();
+builder.Services.AddScoped<IAiCopilotService, InventoryManagement.Infrastructure.Services.AI.SemanticKernelCopilotService>();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddIdentityCore<ApplicationUser>()

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "8Vx9yAMpQOo=",
+  "dgSpecHash": "CNh19QGiTiA=",
   "success": true,
-  "projectFilePath": "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement - Backend\\InventoryManagement.Application\\InventoryManagement.Application.csproj",
+  "projectFilePath": "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement\\InventoryManagement.Application\\InventoryManagement.Application.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\RASON YUDHAPATI\\.nuget\\packages\\automapper\\16.1.1\\automapper.16.1.1.nupkg.sha512",
     "C:\\Users\\RASON YUDHAPATI\\.nuget\\packages\\automapper.extensions.microsoft.dependencyinjection\\12.0.1\\automapper.extensions.microsoft.dependencyinjection.12.0.1.nupkg.sha512",
@@ -24,22 +24,19 @@
     "C:\\Users\\RASON YUDHAPATI\\.nuget\\packages\\microsoft.identitymodel.abstractions\\8.14.0\\microsoft.identitymodel.abstractions.8.14.0.nupkg.sha512",
     "C:\\Users\\RASON YUDHAPATI\\.nuget\\packages\\microsoft.identitymodel.jsonwebtokens\\8.14.0\\microsoft.identitymodel.jsonwebtokens.8.14.0.nupkg.sha512",
     "C:\\Users\\RASON YUDHAPATI\\.nuget\\packages\\microsoft.identitymodel.logging\\8.14.0\\microsoft.identitymodel.logging.8.14.0.nupkg.sha512",
-    "C:\\Users\\RASON YUDHAPATI\\.nuget\\packages\\microsoft.identitymodel.tokens\\8.14.0\\microsoft.identitymodel.tokens.8.14.0.nupkg.sha512",
-    "C:\\Users\\RASON YUDHAPATI\\.nuget\\packages\\microsoft.netcore.app.runtime.linux-x64\\10.0.3\\microsoft.netcore.app.runtime.linux-x64.10.0.3.nupkg.sha512",
-    "C:\\Users\\RASON YUDHAPATI\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.linux-x64\\10.0.3\\microsoft.aspnetcore.app.runtime.linux-x64.10.0.3.nupkg.sha512"
+    "C:\\Users\\RASON YUDHAPATI\\.nuget\\packages\\microsoft.identitymodel.tokens\\8.14.0\\microsoft.identitymodel.tokens.8.14.0.nupkg.sha512"
   ],
   "logs": [
     {
       "code": "NU1608",
       "level": "Warning",
       "message": "Detected package version outside of dependency constraint: AutoMapper.Extensions.Microsoft.DependencyInjection 12.0.1 requires AutoMapper (= 12.0.1) but version AutoMapper 16.1.1 was resolved.",
-      "projectPath": "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement - Backend\\InventoryManagement.Application\\InventoryManagement.Application.csproj",
+      "projectPath": "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement\\InventoryManagement.Application\\InventoryManagement.Application.csproj",
       "warningLevel": 1,
-      "filePath": "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement - Backend\\InventoryManagement.Application\\InventoryManagement.Application.csproj",
+      "filePath": "C:\\Users\\RASON YUDHAPATI\\Documents\\test_dotnet\\InventoryManagement\\InventoryManagement.Application\\InventoryManagement.Application.csproj",
       "libraryId": "AutoMapper",
       "targetGraphs": [
-        "net10.0",
-        "net10.0/linux-x64"
+        "net10.0"
       ]
     }
   ]
