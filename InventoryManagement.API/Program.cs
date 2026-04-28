@@ -1,5 +1,6 @@
 using FluentValidation;
 using InventoryManagement.API.BackgroundJobs;
+using InventoryManagement.API.Middleware;
 using InventoryManagement.Application.Features.Stock.Commands.ReceiveStock;
 using InventoryManagement.Application.Interfaces;
 using InventoryManagement.Infrastructure.Identity;
@@ -104,7 +105,7 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-app.UseMiddleware<InventoryManagement.API.Middleware.ExceptionHandlingMiddleware>();
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {

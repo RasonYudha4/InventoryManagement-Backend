@@ -1,9 +1,16 @@
 using System.Net.Http.Headers;
 using Blazored.LocalStorage;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 
 namespace InventoryManagement.UI.Services; // Adjust to match your folder
 
-public class JwtInterceptor(ILocalStorageService localStorage) : DelegatingHandler
+public class JwtInterceptor(
+    ILocalStorageService localStorage,
+    AuthenticationStateProvider authStateProvider,
+    NavigationManager navigation
+    ) : DelegatingHandler
+
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
@@ -16,7 +23,15 @@ public class JwtInterceptor(ILocalStorageService localStorage) : DelegatingHandl
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
 
-        // 3. Let the HTTP request continue to the API
-        return await base.SendAsync(request, cancellationToken);
+        var response = await base.SendAsync(request, cancellationToken);
+
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        {
+            await localStorage.RemoveItemAsync("authToken");
+            ((CustomAuthStateProvider)authStateProvider).NotifyUserLogout();
+            navigation.NavigateTo("/login");
+        }
+
+        return response;
     }
 }

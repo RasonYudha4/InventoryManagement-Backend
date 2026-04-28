@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using System.Text.Json;
+using System.Linq;
 using Microsoft.AspNetCore.Components.Authorization;
 using Blazored.LocalStorage;
 
@@ -15,6 +16,18 @@ public class CustomAuthStateProvider(ILocalStorageService localStorage) : Authen
             return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
 
         var claims = ParseClaimsFromJwt(token);
+        var expClaim = claims.FirstOrDefault(c => c.Type == "exp")?.Value;
+
+        if (expClaim != null && long.TryParse(expClaim, out var expUnix))
+        {
+            var expiry = DateTimeOffset.FromUnixTimeSeconds(expUnix).UtcDateTime;
+            if (expiry <= DateTime.UtcNow)
+            {
+                await localStorage.RemoveItemAsync("authToken");
+                return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
+            }
+        }
+
         var identity = new ClaimsIdentity(claims, "jwt");
         var user = new ClaimsPrincipal(identity);
 

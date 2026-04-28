@@ -84,12 +84,12 @@ else
 }
 
 @code {
-    private List<SupplierDetailDto> _suppliers = [];
+    private List<SupplierSummaryDto> _suppliers = [];
     private string _search = string.Empty;
     private bool _loading = true;
     private string? _error;
 
-    private IEnumerable<SupplierDetailDto> _filtered =>
+    private IEnumerable<SupplierSummaryDto> _filtered =>
         string.IsNullOrWhiteSpace(_search)
             ? _suppliers
             : _suppliers.Where(s =>
@@ -98,8 +98,16 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        // NOTE: A GetAllSuppliers query is needed in the Application layer.
-        // This page will be wired up once that query is implemented.
-        _loading = false;
+        try {
+            _suppliers = await SupplierService.GetAllSuppliersAsync();
+        } 
+        catch (Exception ex) 
+        {
+            _error = $"Failed to load suppliers: {ex.Message}";
+        }
+        finally 
+        {
+            _loading = false;
+        }
     }
 }

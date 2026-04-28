@@ -21,4 +21,10 @@ public class ProductService(HttpClient http) : IProductService
         var product = await http.GetFromJsonAsync<ProductDetailDto>($"api/product/{id}");
         return product!;
     }
+
+    public async Task<List<ProductSummaryDto>> GetAllProductsAsync()
+    {
+        var result = await http.GetFromJsonAsync<List<ProductSummaryDto>>("api/product");
+        return result ?? [];
+    }
 }

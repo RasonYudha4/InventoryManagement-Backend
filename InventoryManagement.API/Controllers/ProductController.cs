@@ -1,5 +1,6 @@
 using InventoryManagement.API.Models.Requests;
 using InventoryManagement.Application.Features.Products.Commands.CreateProduct;
+using InventoryManagement.Application.Features.Products.Queries.GetAllProducts;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -35,5 +36,13 @@ public class ProductController(IMediator mediator) : ControllerBase
     public async Task<IActionResult> GetProductById(Guid id)
     {
         return Ok($"Product {id} retrieved.");
+    }
+
+    [Authorize(Roles = "Admin,Manager,WarehouseStaff,Auditor")]
+    [HttpGet]
+    public async Task<IActionResult> GetAllProducts()
+    {
+        var result = await mediator.Send(new GetAllProductsQuery());
+        return Ok(result);
     }
 }

@@ -60,7 +60,7 @@ else
                     <th>Name</th>
                     <th>Category</th>
                     <th>Supplier</th>
-                    <th class="col-num">Unit Cost</th>
+                    <th class="col-num">Is Active</th>
                     <th class="col-num">Selling Price</th>
                     <th class="col-num">Reorder Point</th>
                     <th></th>
@@ -74,7 +74,7 @@ else
                         <td class="col-primary">@p.Name</td>
                         <td>@p.CategoryName</td>
                         <td>@p.SupplierName</td>
-                        <td class="col-num">@p.UnitCost.ToString("C")</td>
+                        <td class="col-num">@p.IsActive</td>
                         <td class="col-num">@p.SellingPrice.ToString("C")</td>
                         <td class="col-num">@p.ReorderPoint</td>
                         <td class="col-actions">
@@ -88,12 +88,12 @@ else
 }
 
 @code {
-    private List<ProductDetailDto> _products = [];
+    private List<ProductSummaryDto> _products = [];
     private string _search = string.Empty;
     private bool _loading = true;
     private string? _error;
 
-    private IEnumerable<ProductDetailDto> _filtered =>
+    private IEnumerable<ProductSummaryDto> _filtered =>
         string.IsNullOrWhiteSpace(_search)
             ? _products
             : _products.Where(p =>
@@ -102,9 +102,18 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        // NOTE: A GetAllProducts query is needed in the Application layer.
-        // This page will be wired up once that query is implemented.
-        // For now, rendering an empty state gracefully.
-        _loading = false;
+        try 
+        {
+            _products = await ProductService.GetAllProductsAsync();
+        }
+        catch (Exception ex) 
+        {
+            _error = $"Failed to load products: {ex.Message}";
+        }
+        finally 
+        {
+            _loading = false;
+        }
+
     }
 }
