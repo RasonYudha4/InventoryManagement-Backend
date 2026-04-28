@@ -1,4 +1,4 @@
-using InventoryManagement.Application.Features.Stock.Queries.GetLowStock;
+using InventoryManagement.Application.Features.Stock.Queries;
 using InventoryManagement.Application.Interfaces;
 using MediatR;
 

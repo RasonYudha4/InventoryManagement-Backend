@@ -1,0 +1,134 @@
+@page "/suppliers/create"
+@using InventoryManagement.UI.Models.Requests
+@using System.ComponentModel.DataAnnotations
+@attribute [Authorize(Roles = "Admin,Manager")]
+@inject ISupplierService SupplierService
+@inject NavigationManager Nav
+
+<PageTitle>New Supplier — Inventory</PageTitle>
+
+<div class="page-header">
+    <div class="page-header-left">
+        <a href="/suppliers" class="btn-back"><span class="bi bi-arrow-left"></span> Suppliers</a>
+        <div>
+            <h1 class="page-title">New Supplier</h1>
+            <p class="page-subtitle">Register a new supplier in your directory</p>
+        </div>
+    </div>
+</div>
+
+@if (_error is not null)
+{
+    <div class="alert-error">
+        <span class="bi bi-exclamation-circle-fill"></span> @_error
+    </div>
+}
+
+<div class="form-card form-card-narrow">
+    <EditForm Model="_model" OnValidSubmit="HandleSubmit">
+        <DataAnnotationsValidator />
+
+        <h2 class="form-section-title">Company</h2>
+        <div class="form-group">
+            <label class="form-label">Supplier Name <span class="required">*</span></label>
+            <InputText class="form-input" @bind-Value="_model.Name" placeholder="e.g. Acme Corp" />
+            <ValidationMessage For="() => _model.Name" />
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Tax ID</label>
+            <InputText class="form-input" @bind-Value="_model.TaxId" placeholder="e.g. 12-3456789" />
+            <span class="form-hint">VAT or EIN number — optional but recommended.</span>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Address</label>
+            <InputTextArea class="form-input form-textarea" @bind-Value="_model.Address"
+                           rows="3" placeholder="Full street address (optional)" />
+        </div>
+
+        <h2 class="form-section-title">Contact</h2>
+        <div class="form-grid">
+            <div class="form-group">
+                <label class="form-label">Contact Name <span class="required">*</span></label>
+                <InputText class="form-input" @bind-Value="_model.ContactName"
+                           placeholder="e.g. Jane Smith" />
+                <ValidationMessage For="() => _model.ContactName" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Email <span class="required">*</span></label>
+                <InputText class="form-input" @bind-Value="_model.Email" type="email"
+                           placeholder="e.g. jane@acmecorp.com" />
+                <ValidationMessage For="() => _model.Email" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Phone</label>
+                <InputText class="form-input" @bind-Value="_model.Phone"
+                           placeholder="e.g. +1 555 000 1234" />
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="/suppliers" class="btn-secondary">Cancel</a>
+            <button type="submit" class="btn-primary" disabled="@_submitting">
+                @if (_submitting)
+                {
+                    <span class="spinner-sm"></span> <span>Creating...</span>
+                }
+                else
+                {
+                    <span class="bi bi-plus-lg"></span> <span>Create Supplier</span>
+                }
+            </button>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    private CreateSupplierFormModel _model = new();
+    private bool _submitting;
+    private string? _error;
+
+    private async Task HandleSubmit()
+    {
+        _submitting = true;
+        _error = null;
+
+        try
+        {
+            var request = new CreateSupplierRequest(
+                _model.Name,
+                _model.ContactName,
+                _model.Email,
+                _model.Phone,
+                _model.Address,
+                _model.TaxId
+            );
+
+            var id = await SupplierService.CreateSupplierAsync(request);
+            Nav.NavigateTo($"/suppliers/{id}");
+        }
+        catch (Exception ex)
+        {
+            _error = $"Failed to create supplier: {ex.Message}";
+            _submitting = false;
+        }
+    }
+
+    private class CreateSupplierFormModel
+    {
+        [Required] public string Name { get; set; } = string.Empty;
+
+        [Required] public string ContactName { get; set; } = string.Empty;
+
+        [Required]
+        [EmailAddress(ErrorMessage = "Please enter a valid email address.")]
+        public string Email { get; set; } = string.Empty;
+
+        public string? Phone { get; set; }
+        public string? Address { get; set; }
+        public string? TaxId { get; set; }
+    }
+}

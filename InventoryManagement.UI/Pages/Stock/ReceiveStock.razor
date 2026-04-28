@@ -1,0 +1,186 @@
+@page "/stock/receive"
+@using InventoryManagement.UI.Models.Requests
+@using System.ComponentModel.DataAnnotations
+@attribute [Authorize(Roles = "Admin,Manager,WarehouseStaff")]
+@inject IStockService StockService
+@inject IWarehouseService WarehouseService
+@inject NavigationManager Nav
+
+<PageTitle>Receive Stock — Inventory</PageTitle>
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Receive Stock</h1>
+        <p class="page-subtitle">Record incoming inventory against a purchase order</p>
+    </div>
+</div>
+
+@if (_successMessage is not null)
+{
+    <div class="alert-success">
+        <span class="bi bi-check-circle-fill"></span> @_successMessage
+    </div>
+}
+
+@if (_error is not null)
+{
+    <div class="alert-error">
+        <span class="bi bi-exclamation-circle-fill"></span> @_error
+    </div>
+}
+
+<div class="form-card">
+    <EditForm Model="_model" OnValidSubmit="HandleSubmit">
+        <DataAnnotationsValidator />
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label class="form-label">Product ID <span class="required">*</span></label>
+                <InputText class="form-input" @bind-Value="_model.ProductId" placeholder="Product GUID" />
+                <ValidationMessage For="() => _model.ProductId" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Purchase Order ID</label>
+                <InputText class="form-input" @bind-Value="_model.PurchaseOrderId" placeholder="PO GUID (optional)" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Warehouse <span class="required">*</span></label>
+                <select class="form-select" @onchange="OnWarehouseChanged" disabled="@_loadingWarehouses">
+                    <option value="">— Select warehouse —</option>
+                    @foreach (var wh in _warehouses)
+                    {
+                        <option value="@wh.Id">@wh.Name (@wh.Code)</option>
+                    }
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Location <span class="required">*</span></label>
+                <select class="form-select" @bind="_model.LocationId" disabled="@(!_locations.Any())">
+                    <option value="">— Select location —</option>
+                    @foreach (var loc in _locations)
+                    {
+                        <option value="@loc.Id">@loc.Code</option>
+                    }
+                </select>
+                <ValidationMessage For="() => _model.LocationId" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Quantity <span class="required">*</span></label>
+                <InputNumber class="form-input" @bind-Value="_model.Quantity" min="1" />
+                <ValidationMessage For="() => _model.Quantity" />
+            </div>
+
+            <div class="form-group form-group-full">
+                <label class="form-label">Notes</label>
+                <InputTextArea class="form-input form-textarea" @bind-Value="_model.Notes" rows="3"
+                               placeholder="Optional notes about this receipt..." />
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="button" class="btn-secondary" @onclick="Reset" disabled="@_submitting">
+                Reset
+            </button>
+            <button type="submit" class="btn-primary" disabled="@_submitting">
+                @if (_submitting)
+                {
+                    <span class="spinner-sm"></span> <span>Receiving...</span>
+                }
+                else
+                {
+                    <span class="bi bi-arrow-down-square"></span> <span>Receive Stock</span>
+                }
+            </button>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    private ReceiveStockFormModel _model = new();
+    private List<WarehouseDto> _warehouses = [];
+    private List<LocationDto> _locations = [];
+
+    private bool _loadingWarehouses = true;
+    private bool _submitting;
+    private string? _error;
+    private string? _successMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _warehouses = await WarehouseService.GetAllWarehousesAsync();
+        }
+        catch (Exception ex)
+        {
+            _error = $"Failed to load warehouses: {ex.Message}";
+        }
+        finally
+        {
+            _loadingWarehouses = false;
+        }
+    }
+
+    private void OnWarehouseChanged(ChangeEventArgs e)
+    {
+        _locations = [];
+        _model.LocationId = string.Empty;
+
+        if (Guid.TryParse(e.Value?.ToString(), out var warehouseId))
+        {
+            var warehouse = _warehouses.FirstOrDefault(w => w.Id == warehouseId);
+            _locations = warehouse?.Locations ?? [];
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        _submitting = true;
+        _error = null;
+        _successMessage = null;
+
+        try
+        {
+            if (!Guid.TryParse(_model.ProductId, out var productId))
+                throw new Exception("Invalid Product ID format.");
+
+            Guid? purchaseOrderId = Guid.TryParse(_model.PurchaseOrderId, out var poId) ? poId : null;
+
+            if (!Guid.TryParse(_model.LocationId, out var locationId))
+                throw new Exception("Please select a location.");
+
+            var request = new ReceiveStockRequest(productId, locationId, purchaseOrderId, _model.Quantity, _model.Notes);
+            var transactionId = await StockService.ReceiveStockAsync(request);
+            _successMessage = $"Stock received successfully. Transaction ID: {transactionId}";
+            Reset();
+        }
+        catch (Exception ex)
+        {
+            _error = $"Failed to receive stock: {ex.Message}";
+        }
+        finally
+        {
+            _submitting = false;
+        }
+    }
+
+    private void Reset()
+    {
+        _model = new();
+        _locations = [];
+    }
+
+    private class ReceiveStockFormModel
+    {
+        [Required] public string ProductId { get; set; } = string.Empty;
+        public string? PurchaseOrderId { get; set; }
+        [Required] public string LocationId { get; set; } = string.Empty;
+        [Range(1, int.MaxValue, ErrorMessage = "Quantity must be at least 1.")]
+        public int Quantity { get; set; } = 1;
+        public string? Notes { get; set; }
+    }
+}

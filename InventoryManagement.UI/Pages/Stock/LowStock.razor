@@ -1,0 +1,108 @@
+@page "/stock/low"
+@attribute [Authorize]
+@inject IStockService StockService
+
+<PageTitle>Low Stock — Inventory</PageTitle>
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Low Stock Alerts</h1>
+        <p class="page-subtitle">Items at or below their reorder threshold</p>
+    </div>
+    <button class="btn-refresh" @onclick="LoadData" disabled="@_loading">
+        <span class="bi bi-arrow-clockwise"></span> Refresh
+    </button>
+</div>
+
+@if (_loading)
+{
+    <div class="state-container">
+        <div class="spinner"></div>
+        <p>Loading stock data...</p>
+    </div>
+}
+else if (_error is not null)
+{
+    <div class="alert-error">
+        <span class="bi bi-exclamation-circle-fill"></span>
+        <span>@_error</span>
+    </div>
+}
+else if (!_items.Any())
+{
+    <div class="state-container state-empty">
+        <span class="bi bi-check-circle-fill state-icon"></span>
+        <p>All stock levels are healthy. No items below reorder threshold.</p>
+    </div>
+}
+else
+{
+    <div class="alert-banner">
+        <span class="bi bi-exclamation-triangle-fill"></span>
+        @_items.Count item(s) require attention
+    </div>
+
+    <div class="data-card">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Product Id</th>
+                    <th class="col-num">Current Qty</th>
+                    <th class="col-num">Reorder Point</th>
+                    <th class="col-num">Shortage</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in _items)
+                {
+                    var shortage = item.ReorderPoint - item.CurrentQuantity;
+                    <tr class="@(item.CurrentQuantity == 0 ? "row-critical" : "row-warning")">
+                        <td class="col-primary">@item.ProductName</td>
+                        <td class="col-mono">@item.ProductId</td>
+                        <td class="col-num">@item.CurrentQuantity</td>
+                        <td class="col-num">@item.ReorderPoint</td>
+                        <td class="col-num col-danger">@shortage</td>
+                        <td>
+                            @if (item.CurrentQuantity == 0)
+                            {
+                                <span class="badge badge-critical">Out of Stock</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-warning">Low Stock</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private List<LowStockItemDto> _items = [];
+    private bool _loading = true;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync() => await LoadData();
+
+    private async Task LoadData()
+    {
+        _loading = true;
+        _error = null;
+        try
+        {
+            _items = await StockService.GetLowStockItemsAsync();
+        }
+        catch (Exception ex)
+        {
+            _error = $"Failed to load low stock items: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

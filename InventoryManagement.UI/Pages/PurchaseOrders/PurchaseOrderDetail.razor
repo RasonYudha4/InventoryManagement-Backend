@@ -1,0 +1,232 @@
+@page "/purchase-orders/{Id:guid}"
+@using InventoryManagement.UI.Models.Enums
+@attribute [Authorize(Roles = "Admin,Manager,Auditor")]
+@inject IPurchaseOrderService PurchaseOrderService
+
+<PageTitle>@(_order?.PONumber ?? "Purchase Order") — Inventory</PageTitle>
+
+@if (_loading)
+{
+    <div class="state-container">
+        <div class="spinner"></div>
+        <p>Loading purchase order...</p>
+    </div>
+}
+else if (_error is not null)
+{
+    <div class="page-header">
+        <a href="/purchase-orders" class="btn-back"><span class="bi bi-arrow-left"></span> Purchase Orders</a>
+    </div>
+    <div class="alert-error">
+        <span class="bi bi-exclamation-circle-fill"></span> @_error
+    </div>
+}
+else if (_order is not null)
+{
+    <div class="page-header">
+        <div class="page-header-left">
+            <a href="/purchase-orders" class="btn-back"><span class="bi bi-arrow-left"></span> Purchase Orders</a>
+            <div>
+                <h1 class="page-title">@_order.PONumber</h1>
+                <p class="page-subtitle">
+                    <span class="badge @GetStatusBadgeClass(_order.Status)">@_order.Status</span>
+                    &nbsp;·&nbsp; @_order.SupplierName
+                </p>
+            </div>
+        </div>
+        <AuthorizeView Roles="Admin,Manager">
+            <Authorized>
+                @if (_order.Status == PurchaseOrderStatus.Draft)
+                {
+                    <button class="btn-primary" @onclick="ApproveOrder" disabled="@_approving">
+                        @if (_approving)
+                        {
+                            <span class="spinner-sm"></span> <span>Approving...</span>
+                        }
+                        else
+                        {
+                            <span class="bi bi-check-lg"></span> <span>Approve Order</span>
+                        }
+                    </button>
+                }
+            </Authorized>
+        </AuthorizeView>
+    </div>
+
+    @if (_approveError is not null)
+    {
+        <div class="alert-error">
+            <span class="bi bi-exclamation-circle-fill"></span> @_approveError
+        </div>
+    }
+
+    @if (_approveSuccess)
+    {
+        <div class="alert-success">
+            <span class="bi bi-check-circle-fill"></span> Purchase order approved successfully.
+        </div>
+    }
+
+    <div class="detail-grid">
+        <div class="detail-card">
+            <h2 class="detail-card-title">Order Details</h2>
+            <dl class="detail-list">
+                <div class="detail-row">
+                    <dt>PO Number</dt>
+                    <dd class="col-mono">@_order.PONumber</dd>
+                </div>
+                <div class="detail-row">
+                    <dt>Status</dt>
+                    <dd><span class="badge @GetStatusBadgeClass(_order.Status)">@_order.Status</span></dd>
+                </div>
+                <div class="detail-row">
+                    <dt>Order Date</dt>
+                    <dd>@_order.OrderDate.ToString("dd MMM yyyy")</dd>
+                </div>
+                <div class="detail-row">
+                    <dt>Expected Delivery</dt>
+                    <dd>@(_order.ExpectedDeliveryDate?.ToString("dd MMM yyyy") ?? "Not specified")</dd>
+                </div>
+                @if (_order.Notes is not null)
+                {
+                    <div class="detail-row">
+                        <dt>Notes</dt>
+                        <dd>@_order.Notes</dd>
+                    </div>
+                }
+            </dl>
+        </div>
+
+        <div class="detail-card">
+            <h2 class="detail-card-title">Supplier</h2>
+            <dl class="detail-list">
+                <div class="detail-row">
+                    <dt>Name</dt>
+                    <dd>
+                        <a href="/suppliers/@_order.SupplierId" class="btn-link">@_order.SupplierName</a>
+                    </dd>
+                </div>
+            </dl>
+        </div>
+
+        <div class="detail-card">
+            <h2 class="detail-card-title">Summary</h2>
+            <dl class="detail-list">
+                <div class="detail-row">
+                    <dt>Total Lines</dt>
+                    <dd>@_order.OrderLines.Count</dd>
+                </div>
+                <div class="detail-row">
+                    <dt>Total Units Ordered</dt>
+                    <dd>@_order.OrderLines.Sum(l => l.OrderedQuantity)</dd>
+                </div>
+                <div class="detail-row">
+                    <dt>Total Units Received</dt>
+                    <dd>@_order.OrderLines.Sum(l => l.ReceivedQuantity)</dd>
+                </div>
+                <div class="detail-row">
+                    <dt>Total Amount</dt>
+                    <dd class="col-primary">@_order.TotalAmount.ToString("C")</dd>
+                </div>
+            </dl>
+        </div>
+    </div>
+
+    <h2 class="section-title">Order Lines</h2>
+    <div class="data-card">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th class="col-num">#</th>
+                    <th>Product</th>
+                    <th>SKU</th>
+                    <th class="col-num">Ordered</th>
+                    <th class="col-num">Received</th>
+                    <th class="col-num">Remaining</th>
+                    <th class="col-num">Unit Cost</th>
+                    <th class="col-num">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var line in _order.OrderLines)
+                {
+                    var remaining = line.OrderedQuantity - line.ReceivedQuantity;
+                    <tr>
+                        <td class="col-num">@line.LineNumber</td>
+                        <td class="col-primary">@line.ProductName</td>
+                        <td class="col-mono">@line.SKU</td>
+                        <td class="col-num">@line.OrderedQuantity</td>
+                        <td class="col-num">@line.ReceivedQuantity</td>
+                        <td class="col-num @(remaining > 0 ? "col-warning" : "")">@remaining</td>
+                        <td class="col-num">@line.UnitCost.ToString("C")</td>
+                        <td class="col-num">@line.TotalCost.ToString("C")</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr class="table-footer">
+                    <td colspan="7" class="col-num">Total</td>
+                    <td class="col-num col-primary">@_order.TotalAmount.ToString("C")</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private PurchaseOrderDetailDto? _order;
+    private bool _loading = true;
+    private bool _approving;
+    private bool _approveSuccess;
+    private string? _error;
+    private string? _approveError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _order = await PurchaseOrderService.GetPurchaseOrderByIdAsync(Id);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Failed to load purchase order: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task ApproveOrder()
+    {
+        _approving = true;
+        _approveError = null;
+        _approveSuccess = false;
+
+        try
+        {
+            await PurchaseOrderService.ApproveOrderAsync(Id);
+            _order = await PurchaseOrderService.GetPurchaseOrderByIdAsync(Id);
+            _approveSuccess = true;
+        }
+        catch (Exception ex)
+        {
+            _approveError = $"Failed to approve order: {ex.Message}";
+        }
+        finally
+        {
+            _approving = false;
+        }
+    }
+
+    private static string GetStatusBadgeClass(PurchaseOrderStatus status) => status switch
+    {
+        PurchaseOrderStatus.Draft      => "badge-neutral",
+        PurchaseOrderStatus.Approved   => "badge-info",
+        PurchaseOrderStatus.Received   => "badge-success",
+        PurchaseOrderStatus.Cancelled  => "badge-critical",
+        _                              => "badge-neutral"
+    };
+}

@@ -1,0 +1,109 @@
+@page "/warehouses"
+@attribute [Authorize]
+@inject IWarehouseService WarehouseService
+
+<PageTitle>Warehouses — Inventory</PageTitle>
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Warehouses</h1>
+        <p class="page-subtitle">All warehouse facilities and their locations</p>
+    </div>
+    <AuthorizeView Roles="Admin">
+        <Authorized>
+            <a href="/warehouses/create" class="btn-primary">
+                <span class="bi bi-plus-lg"></span> New Warehouse
+            </a>
+        </Authorized>
+    </AuthorizeView>
+</div>
+
+@if (_loading)
+{
+    <div class="state-container">
+        <div class="spinner"></div>
+        <p>Loading warehouses...</p>
+    </div>
+}
+else if (_error is not null)
+{
+    <div class="alert-error">
+        <span class="bi bi-exclamation-circle-fill"></span> @_error
+    </div>
+}
+else if (!_warehouses.Any())
+{
+    <div class="state-container state-empty">
+        <span class="bi bi-building state-icon"></span>
+        <p>No warehouses configured yet.</p>
+        <AuthorizeView Roles="Admin">
+            <Authorized>
+                <a href="/warehouses/create" class="btn-primary">Add your first warehouse</a>
+            </Authorized>
+        </AuthorizeView>
+    </div>
+}
+else
+{
+    <div class="card-grid">
+        @foreach (var wh in _warehouses)
+        {
+            <div class="warehouse-card">
+                <div class="warehouse-card-header">
+                    <span class="warehouse-code">@wh.Code</span>
+                    <span class="location-count">@wh.Locations.Count location(s)</span>
+                </div>
+                <h3 class="warehouse-name">@wh.Name</h3>
+
+                @if (wh.Locations.Any())
+                {
+                    <div class="location-chips">
+                        @foreach (var loc in wh.Locations.Take(5))
+                        {
+                            <span class="chip">@loc.Code</span>
+                        }
+                        @if (wh.Locations.Count > 5)
+                        {
+                            <span class="chip chip-muted">+@(wh.Locations.Count - 5) more</span>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="muted">No locations configured.</p>
+                }
+
+                <div class="warehouse-card-footer">
+                    <a href="/warehouses/@wh.Id" class="btn-link">View details →</a>
+                    <AuthorizeView Roles="Admin,Manager">
+                        <Authorized>
+                            <a href="/locations/create?warehouseId=@wh.Id" class="btn-link">Add location</a>
+                        </Authorized>
+                    </AuthorizeView>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<WarehouseDto> _warehouses = [];
+    private bool _loading = true;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _warehouses = await WarehouseService.GetAllWarehousesAsync();
+        }
+        catch (Exception ex)
+        {
+            _error = $"Failed to load warehouses: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

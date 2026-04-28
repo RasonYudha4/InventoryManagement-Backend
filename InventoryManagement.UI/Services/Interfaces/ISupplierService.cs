@@ -7,4 +7,5 @@ public interface ISupplierService
 {
     Task<Guid> CreateSupplierAsync(CreateSupplierRequest request);
     Task<SupplierDetailDto> GetSupplierByIdAsync(Guid id);
+    Task<List<SupplierSummaryDto>> GetAllSuppliersAsync();
 }

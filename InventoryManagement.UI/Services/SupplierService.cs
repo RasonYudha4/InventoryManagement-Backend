@@ -21,4 +21,9 @@ public class SupplierService(HttpClient http) : ISupplierService
         var result = await http.GetFromJsonAsync<SupplierDetailDto>($"api/supplier/{id}");
         return result!;
     }
+    public async Task<List<SupplierSummaryDto>> GetAllSuppliersAsync()
+    {
+        var result = await http.GetFromJsonAsync<List<SupplierSummaryDto>>("api/supplier");
+        return result ?? [];
+    }
 }

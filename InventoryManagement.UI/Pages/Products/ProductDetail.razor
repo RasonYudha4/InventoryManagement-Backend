@@ -1,0 +1,128 @@
+@page "/products/{Id:guid}"
+@attribute [Authorize]
+@inject IProductService ProductService
+@inject NavigationManager Nav
+
+<PageTitle>@(_product?.Name ?? "Product") — Inventory</PageTitle>
+
+@if (_loading)
+{
+    <div class="state-container">
+        <div class="spinner"></div>
+        <p>Loading product...</p>
+    </div>
+}
+else if (_error is not null)
+{
+    <div class="page-header">
+        <a href="/products" class="btn-back"><span class="bi bi-arrow-left"></span> Products</a>
+    </div>
+    <div class="alert-error">
+        <span class="bi bi-exclamation-circle-fill"></span> @_error
+    </div>
+}
+else if (_product is not null)
+{
+    <div class="page-header">
+        <div class="page-header-left">
+            <a href="/products" class="btn-back"><span class="bi bi-arrow-left"></span> Products</a>
+            <div>
+                <h1 class="page-title">@_product.Name</h1>
+                <p class="page-subtitle col-mono">@_product.SKU</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="detail-grid">
+        <div class="detail-card">
+            <h2 class="detail-card-title">Product Info</h2>
+            <dl class="detail-list">
+                <div class="detail-row">
+                    <dt>SKU</dt>
+                    <dd class="col-mono">@_product.SKU</dd>
+                </div>
+                <div class="detail-row">
+                    <dt>Name</dt>
+                    <dd>@_product.Name</dd>
+                </div>
+                @if (_product.Description is not null)
+                {
+                    <div class="detail-row">
+                        <dt>Description</dt>
+                        <dd>@_product.Description</dd>
+                    </div>
+                }
+                <div class="detail-row">
+                    <dt>Category</dt>
+                    <dd>@_product.CategoryName</dd>
+                </div>
+                <div class="detail-row">
+                    <dt>Supplier</dt>
+                    <dd>
+                        @_product.SupplierName
+                    </dd>
+                </div>
+            </dl>
+        </div>
+
+        <div class="detail-card">
+            <h2 class="detail-card-title">Pricing</h2>
+            <dl class="detail-list">
+                <div class="detail-row">
+                    <dt>Unit Cost</dt>
+                    <dd>@_product.UnitCost.ToString("C")</dd>
+                </div>
+                <div class="detail-row">
+                    <dt>Selling Price</dt>
+                    <dd>@_product.SellingPrice.ToString("C")</dd>
+                </div>
+                <div class="detail-row">
+                    <dt>Margin</dt>
+                    <dd>@((_product.SellingPrice - _product.UnitCost).ToString("C"))
+                        <span class="muted">(@((_product.SellingPrice > 0
+                            ? (_product.SellingPrice - _product.UnitCost) / _product.SellingPrice * 100
+                            : 0).ToString("F1"))%)</span>
+                    </dd>
+                </div>
+            </dl>
+        </div>
+
+        <div class="detail-card">
+            <h2 class="detail-card-title">Replenishment</h2>
+            <dl class="detail-list">
+                <div class="detail-row">
+                    <dt>Reorder Point</dt>
+                    <dd>@_product.ReorderPoint units</dd>
+                </div>
+                <div class="detail-row">
+                    <dt>Reorder Quantity</dt>
+                    <dd>@_product.ReorderQuantity units</dd>
+                </div>
+            </dl>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private ProductDetailDto? _product;
+    private bool _loading = true;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _product = await ProductService.GetProductByIdAsync(Id);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Failed to load product: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

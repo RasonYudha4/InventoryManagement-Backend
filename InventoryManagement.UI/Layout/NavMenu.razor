@@ -1,41 +1,113 @@
 ﻿<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">InventoryManagement.UI</a>
+        <a class="navbar-brand" href="">Inventory Management</a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
     </div>
 </div>
 
-<div class="nav-scrollable" onclick="ToggleNavMenu">
+<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
     <nav class="flex-column">
+
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
                 <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Dashboard
             </NavLink>
         </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="inventory">
-                <span class="bi bi-box-seam-nav-menu" aria-hidden="true"></span> Inventory
-            </NavLink>
-        </div>
-
         <AuthorizeView>
             <Authorized>
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="receive-stock">
+                    <NavLink class="nav-link" href="stock/low">
+                        <span class="bi bi-exclamation-triangle-fill-nav-menu" aria-hidden="true"></span> Low Stock
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="stock/location">
+                        <span class="bi bi-box-seam-nav-menu" aria-hidden="true"></span> Stock Levels
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+
+        <AuthorizeView Roles="Admin,Manager,WarehouseStaff">
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="stock/receive">
                         <span class="bi bi-arrow-down-square-nav-menu" aria-hidden="true"></span> Receive Stock
                     </NavLink>
                 </div>
-                
+
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="dispatch-stock">
+                    <NavLink class="nav-link" href="stock/dispatch">
                         <span class="bi bi-arrow-up-square-nav-menu" aria-hidden="true"></span> Dispatch Stock
                     </NavLink>
                 </div>
             </Authorized>
         </AuthorizeView>
+
+        <AuthorizeView>
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="products">
+                        <span class="bi bi-tag-fill-nav-menu" aria-hidden="true"></span> Products
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+
+        <AuthorizeView>
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="warehouses">
+                        <span class="bi bi-building-nav-menu" aria-hidden="true"></span> Warehouses
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+
+        <AuthorizeView Roles="Admin,Manager">
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="locations/create">
+                        <span class="bi bi-geo-fill-nav-menu" aria-hidden="true"></span> Add Location
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+
+        <AuthorizeView Roles="Admin,Manager,Auditor">
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="purchase-orders">
+                        <span class="bi bi-receipt-nav-menu" aria-hidden="true"></span> Purchase Orders
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+
+        <AuthorizeView Roles="Admin,Manager">
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="suppliers">
+                        <span class="bi bi-truck-nav-menu" aria-hidden="true"></span> Suppliers
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+
+        <AuthorizeView Roles="Admin">
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="warehouses/create">
+                        <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Add Warehouse
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+
     </nav>
 </div>
 

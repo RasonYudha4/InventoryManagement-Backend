@@ -1,0 +1,118 @@
+@page "/warehouses/{Id:guid}"
+@attribute [Authorize]
+@inject IWarehouseService WarehouseService
+
+<PageTitle>@(_warehouse?.Name ?? "Warehouse") — Inventory</PageTitle>
+
+@if (_loading)
+{
+    <div class="state-container">
+        <div class="spinner"></div>
+        <p>Loading warehouse...</p>
+    </div>
+}
+else if (_error is not null)
+{
+    <div class="page-header">
+        <a href="/warehouses" class="btn-back"><span class="bi bi-arrow-left"></span> Warehouses</a>
+    </div>
+    <div class="alert-error">
+        <span class="bi bi-exclamation-circle-fill"></span> @_error
+    </div>
+}
+else if (_warehouse is not null)
+{
+    <div class="page-header">
+        <div class="page-header-left">
+            <a href="/warehouses" class="btn-back"><span class="bi bi-arrow-left"></span> Warehouses</a>
+            <div>
+                <h1 class="page-title">@_warehouse.Name</h1>
+                <p class="page-subtitle">@_warehouse.Code @(_warehouse.Address is not null ? $"· {_warehouse.Address}" : "")</p>
+            </div>
+        </div>
+        <AuthorizeView Roles="Admin,Manager">
+            <Authorized>
+                <a href="/locations/create?warehouseId=@_warehouse.Id" class="btn-primary">
+                    <span class="bi bi-plus-lg"></span> Add Location
+                </a>
+            </Authorized>
+        </AuthorizeView>
+    </div>
+
+    <div class="stats-bar">
+        <div class="stat">
+            <span class="stat-value">@_warehouse.Locations.Count</span>
+            <span class="stat-label">Total Locations</span>
+        </div>
+        <div class="stat">
+            <span class="stat-value">@_warehouse.Locations.Sum(l => l.MaxWeightCapacity).ToString("N0")</span>
+            <span class="stat-label">Total Capacity (kg)</span>
+        </div>
+    </div>
+
+    @if (!_warehouse.Locations.Any())
+    {
+        <div class="state-container state-empty">
+            <span class="bi bi-geo state-icon"></span>
+            <p>No locations configured for this warehouse.</p>
+        </div>
+    }
+    else
+    {
+        <div class="data-card">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Aisle</th>
+                        <th>Rack</th>
+                        <th>Shelf</th>
+                        <th>Bin</th>
+                        <th class="col-num">Max Weight (kg)</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var loc in _warehouse.Locations.OrderBy(l => l.Code))
+                    {
+                        <tr>
+                            <td class="col-mono col-primary">@loc.Code</td>
+                            <td>@(loc.Aisle ?? "—")</td>
+                            <td>@(loc.Rack ?? "—")</td>
+                            <td>@(loc.Shelf ?? "—")</td>
+                            <td>@(loc.Bin ?? "—")</td>
+                            <td class="col-num">@loc.MaxWeightCapacity.ToString("N0")</td>
+                            <td class="col-actions">
+                                <a href="/stock/location?locationId=@loc.Id" class="btn-link">View Stock</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private WarehouseDetailDto? _warehouse;
+    private bool _loading = true;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _warehouse = await WarehouseService.GetWarehouseByIdAsync(Id);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Failed to load warehouse: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

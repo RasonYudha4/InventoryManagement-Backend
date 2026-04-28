@@ -1,0 +1,157 @@
+@page "/stock/location"
+@attribute [Authorize]
+@inject IStockService StockService
+@inject IWarehouseService WarehouseService
+
+<PageTitle>Stock Levels — Inventory</PageTitle>
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Stock Levels by Location</h1>
+        <p class="page-subtitle">View current inventory at a specific warehouse location</p>
+    </div>
+</div>
+
+<div class="filter-bar">
+    <div class="filter-group">
+        <label class="filter-label">Warehouse</label>
+        <select class="form-select" @onchange="OnWarehouseChanged" disabled="@_loadingWarehouses">
+            <option value="">— Select a warehouse —</option>
+            @foreach (var wh in _warehouses)
+            {
+                <option value="@wh.Id">@wh.Name (@wh.Code)</option>
+            }
+        </select>
+    </div>
+
+    <div class="filter-group">
+        <label class="filter-label">Location</label>
+        <select class="form-select" @bind="_selectedLocationId" disabled="@(!_locations.Any())">
+            <option value="">— Select a location —</option>
+            @foreach (var loc in _locations)
+            {
+                <option value="@loc.Id">@loc.Code</option>
+            }
+        </select>
+    </div>
+
+    <button class="btn-primary" @onclick="LoadStockLevels"
+            disabled="@(_selectedLocationId == Guid.Empty || _loading)">
+        <span class="bi bi-search"></span> View Stock
+    </button>
+</div>
+
+@if (_error is not null)
+{
+    <div class="alert-error">
+        <span class="bi bi-exclamation-circle-fill"></span> @_error
+    </div>
+}
+
+@if (_loading)
+{
+    <div class="state-container">
+        <div class="spinner"></div>
+        <p>Loading stock levels...</p>
+    </div>
+}
+else if (_stockLevels.Any())
+{
+    <div class="data-card">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>SKU</th>
+                    <th class="col-num">Total Qty</th>
+                    <th class="col-num">Allocated</th>
+                    <th class="col-num">Available</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var s in _stockLevels)
+                {
+                    <tr>
+                        <td class="col-primary">@s.ProductName</td>
+                        <td class="col-mono">@s.SKU</td>
+                        <td class="col-num">@s.TotalQuantity</td>
+                        <td class="col-num">@s.AllocatedQuantity</td>
+                        <td class="col-num @(s.AvailableQuantity == 0 ? "col-danger" : "")">@s.AvailableQuantity</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else if (_searched)
+{
+    <div class="state-container state-empty">
+        <span class="bi bi-inbox state-icon"></span>
+        <p>No stock found at this location.</p>
+    </div>
+}
+
+@code {
+    private List<WarehouseDto> _warehouses = [];
+    private List<LocationDto> _locations = [];
+    private List<StockLevelDto> _stockLevels = [];
+
+    private Guid _selectedLocationId;
+    private bool _loading;
+    private bool _loadingWarehouses = true;
+    private bool _searched;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _warehouses = await WarehouseService.GetAllWarehousesAsync();
+        }
+        catch (Exception ex)
+        {
+            _error = $"Failed to load warehouses: {ex.Message}";
+        }
+        finally
+        {
+            _loadingWarehouses = false;
+        }
+    }
+
+    private void OnWarehouseChanged(ChangeEventArgs e)
+    {
+        _locations = [];
+        _stockLevels = [];
+        _selectedLocationId = Guid.Empty;
+        _searched = false;
+
+        if (Guid.TryParse(e.Value?.ToString(), out var warehouseId))
+        {
+            var warehouse = _warehouses.FirstOrDefault(w => w.Id == warehouseId);
+            _locations = warehouse?.Locations ?? [];
+        }
+    }
+
+    private async Task LoadStockLevels()
+    {
+        if (_selectedLocationId == Guid.Empty) return;
+
+        _loading = true;
+        _error = null;
+        _searched = false;
+
+        try
+        {
+            _stockLevels = await StockService.GetStockByLocationAsync(_selectedLocationId);
+            _searched = true;
+        }
+        catch (Exception ex)
+        {
+            _error = $"Failed to load stock levels: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

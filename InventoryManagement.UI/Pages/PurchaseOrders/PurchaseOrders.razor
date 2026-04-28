@@ -1,0 +1,119 @@
+@page "/purchase-orders"
+@using InventoryManagement.UI.Models.Enums
+@attribute [Authorize(Roles = "Admin,Manager,Auditor")]
+@inject IPurchaseOrderService PurchaseOrderService
+@inject NavigationManager Nav
+
+<PageTitle>Purchase Orders — Inventory</PageTitle>
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Purchase Orders</h1>
+        <p class="page-subtitle">Track and manage all procurement orders</p>
+    </div>
+    <AuthorizeView Roles="Admin,Manager">
+        <Authorized>
+            <a href="/purchase-orders/create" class="btn-primary">
+                <span class="bi bi-plus-lg"></span> New Order
+            </a>
+        </Authorized>
+    </AuthorizeView>
+</div>
+
+@if (_loading)
+{
+    <div class="state-container">
+        <div class="spinner"></div>
+        <p>Loading purchase orders...</p>
+    </div>
+}
+else if (_error is not null)
+{
+    <div class="alert-error">
+        <span class="bi bi-exclamation-circle-fill"></span> @_error
+    </div>
+}
+else if (!_orders.Any())
+{
+    <div class="state-container state-empty">
+        <span class="bi bi-receipt state-icon"></span>
+        <p>No purchase orders found.</p>
+    </div>
+}
+else
+{
+    <div class="toolbar">
+        <div class="filter-tabs">
+            @foreach (var status in _statusFilters)
+            {
+                <button class="filter-tab @(_activeFilter == status ? "filter-tab-active" : "")"
+                        @onclick="() => _activeFilter = status">
+                    @status
+                </button>
+            }
+        </div>
+        <span class="result-count">@_filtered.Count() result(s)</span>
+    </div>
+
+    <div class="data-card">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>PO Number</th>
+                    <th>Supplier</th>
+                    <th>Order Date</th>
+                    <th>Expected Delivery</th>
+                    <th class="col-num">Total Amount</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var po in _filtered)
+                {
+                    <tr>
+                        <td class="col-mono col-primary">@po.PONumber</td>
+                        <td>@po.SupplierName</td>
+                        <td>@po.OrderDate.ToString("dd MMM yyyy")</td>
+                        <td>@(po.ExpectedDeliveryDate?.ToString("dd MMM yyyy") ?? "—")</td>
+                        <td class="col-num">@po.TotalAmount.ToString("C")</td>
+                        <td><span class="badge @GetStatusBadgeClass(po.Status)">@po.Status</span></td>
+                        <td class="col-actions">
+                            <a href="/purchase-orders/@po.Id" class="btn-link">View</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private List<PurchaseOrderDetailDto> _orders = [];
+    private string _activeFilter = "All";
+    private bool _loading = true;
+    private string? _error;
+
+    private static readonly string[] _statusFilters = ["All", "Draft", "Approved", "Received", "Cancelled"];
+
+    private IEnumerable<PurchaseOrderDetailDto> _filtered =>
+        _activeFilter == "All"
+            ? _orders
+            : _orders.Where(o => o.Status.ToString() == _activeFilter);
+
+    protected override async Task OnInitializedAsync()
+    {
+        // NOTE: A GetAllPurchaseOrders query is needed in the Application layer.
+        // This page will be wired up once that query is implemented.
+        _loading = false;
+    }
+
+    private static string GetStatusBadgeClass(PurchaseOrderStatus status) => status switch
+    {
+        PurchaseOrderStatus.Draft      => "badge-neutral",
+        PurchaseOrderStatus.Approved   => "badge-info",
+        PurchaseOrderStatus.Received   => "badge-success",
+        PurchaseOrderStatus.Cancelled  => "badge-critical",
+        _                              => "badge-neutral"
+    };
+}

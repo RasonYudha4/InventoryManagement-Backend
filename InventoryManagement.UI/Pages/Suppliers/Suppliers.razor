@@ -1,0 +1,105 @@
+@page "/suppliers"
+@attribute [Authorize(Roles = "Admin,Manager")]
+@inject ISupplierService SupplierService
+
+<PageTitle>Suppliers — Inventory</PageTitle>
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Suppliers</h1>
+        <p class="page-subtitle">Manage your supplier directory</p>
+    </div>
+    <a href="/suppliers/create" class="btn-primary">
+        <span class="bi bi-plus-lg"></span> New Supplier
+    </a>
+</div>
+
+@if (_loading)
+{
+    <div class="state-container">
+        <div class="spinner"></div>
+        <p>Loading suppliers...</p>
+    </div>
+}
+else if (_error is not null)
+{
+    <div class="alert-error">
+        <span class="bi bi-exclamation-circle-fill"></span> @_error
+    </div>
+}
+else if (!_suppliers.Any())
+{
+    <div class="state-container state-empty">
+        <span class="bi bi-truck state-icon"></span>
+        <p>No suppliers found.</p>
+        <a href="/suppliers/create" class="btn-primary">Add your first supplier</a>
+    </div>
+}
+else
+{
+    <div class="toolbar">
+        <input class="search-input" type="search" placeholder="Search by name or contact..."
+               @bind="_search" @bind:event="oninput" />
+        <span class="result-count">@_filtered.Count() result(s)</span>
+    </div>
+
+    <div class="data-card">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Contact</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var s in _filtered)
+                {
+                    <tr>
+                        <td class="col-primary">@s.Name</td>
+                        <td>@s.ContactName</td>
+                        <td><a href="mailto:@s.Email" class="btn-link">@s.Email</a></td>
+                        <td>@(s.Phone ?? "—")</td>
+                        <td>
+                            @if (s.IsActive)
+                            {
+                                <span class="badge badge-success">Active</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-neutral">Inactive</span>
+                            }
+                        </td>
+                        <td class="col-actions">
+                            <a href="/suppliers/@s.Id" class="btn-link">View</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private List<SupplierDetailDto> _suppliers = [];
+    private string _search = string.Empty;
+    private bool _loading = true;
+    private string? _error;
+
+    private IEnumerable<SupplierDetailDto> _filtered =>
+        string.IsNullOrWhiteSpace(_search)
+            ? _suppliers
+            : _suppliers.Where(s =>
+                s.Name.Contains(_search, StringComparison.OrdinalIgnoreCase) ||
+                s.ContactName.Contains(_search, StringComparison.OrdinalIgnoreCase));
+
+    protected override async Task OnInitializedAsync()
+    {
+        // NOTE: A GetAllSuppliers query is needed in the Application layer.
+        // This page will be wired up once that query is implemented.
+        _loading = false;
+    }
+}

@@ -1,0 +1,174 @@
+@page "/locations/create"
+@using System.ComponentModel.DataAnnotations
+@using InventoryManagement.UI.Models.Requests
+@attribute [Authorize(Roles = "Admin,Manager")]
+@inject ILocationService LocationService
+@inject IWarehouseService WarehouseService
+@inject NavigationManager Nav
+
+<PageTitle>Add Location — Inventory</PageTitle>
+
+<div class="page-header">
+    <div class="page-header-left">
+        <a href="/warehouses" class="btn-back"><span class="bi bi-arrow-left"></span> Warehouses</a>
+        <div>
+            <h1 class="page-title">Add Location</h1>
+            <p class="page-subtitle">Register a new storage location within a warehouse</p>
+        </div>
+    </div>
+</div>
+
+@if (_error is not null)
+{
+    <div class="alert-error">
+        <span class="bi bi-exclamation-circle-fill"></span> @_error
+    </div>
+}
+
+@if (_successMessage is not null)
+{
+    <div class="alert-success">
+        <span class="bi bi-check-circle-fill"></span> @_successMessage
+    </div>
+}
+
+<div class="form-card form-card-narrow">
+    <EditForm Model="_model" OnValidSubmit="HandleSubmit">
+        <DataAnnotationsValidator />
+
+        <div class="form-group">
+            <label class="form-label">Warehouse <span class="required">*</span></label>
+            <select class="form-select" @bind="_model.WarehouseId" disabled="@_loadingWarehouses">
+                <option value="">— Select warehouse —</option>
+                @foreach (var wh in _warehouses)
+                {
+                    <option value="@wh.Id">@wh.Name (@wh.Code)</option>
+                }
+            </select>
+            <ValidationMessage For="() => _model.WarehouseId" />
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Location Code <span class="required">*</span></label>
+            <InputText class="form-input" @bind-Value="_model.Code" placeholder="e.g. A-01-B-03" />
+            <ValidationMessage For="() => _model.Code" />
+        </div>
+
+        <div class="form-grid form-grid-4">
+            <div class="form-group">
+                <label class="form-label">Aisle</label>
+                <InputText class="form-input" @bind-Value="_model.Aisle" placeholder="e.g. A" />
+            </div>
+            <div class="form-group">
+                <label class="form-label">Rack</label>
+                <InputText class="form-input" @bind-Value="_model.Rack" placeholder="e.g. 01" />
+            </div>
+            <div class="form-group">
+                <label class="form-label">Shelf</label>
+                <InputText class="form-input" @bind-Value="_model.Shelf" placeholder="e.g. B" />
+            </div>
+            <div class="form-group">
+                <label class="form-label">Bin</label>
+                <InputText class="form-input" @bind-Value="_model.Bin" placeholder="e.g. 03" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Max Weight Capacity (kg) <span class="required">*</span></label>
+            <InputNumber class="form-input" @bind-Value="_model.MaxWeightCapacity" min="0" />
+            <ValidationMessage For="() => _model.MaxWeightCapacity" />
+        </div>
+
+        <div class="form-actions">
+            <a href="/warehouses" class="btn-secondary">Cancel</a>
+            <button type="submit" class="btn-primary" disabled="@_submitting">
+                @if (_submitting)
+                {
+                    <span class="spinner-sm"></span> <span>Adding...</span>
+                }
+                else
+                {
+                    <span>Add Location</span>
+                }
+            </button>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    [SupplyParameterFromQuery] public Guid? WarehouseId { get; set; }
+
+    private CreateLocationFormModel _model = new();
+    private List<WarehouseDto> _warehouses = [];
+    private bool _loadingWarehouses = true;
+    private bool _submitting;
+    private string? _error;
+    private string? _successMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _warehouses = await WarehouseService.GetAllWarehousesAsync();
+            if (WarehouseId.HasValue)
+                _model.WarehouseId = WarehouseId.Value.ToString();
+        }
+        catch (Exception ex)
+        {
+            _error = $"Failed to load warehouses: {ex.Message}";
+        }
+        finally
+        {
+            _loadingWarehouses = false;
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        _submitting = true;
+        _error = null;
+        _successMessage = null;
+
+        try
+        {
+            if (!Guid.TryParse(_model.WarehouseId, out var warehouseId))
+                throw new Exception("Please select a warehouse.");
+
+            var request = new CreateLocationRequest(
+                warehouseId,
+                _model.Code,
+                _model.Aisle,
+                _model.Rack,
+                _model.Shelf,
+                _model.Bin,
+                _model.MaxWeightCapacity
+            );
+
+            await LocationService.CreateLocationAsync(request);
+            _successMessage = $"Location '{_model.Code}' added successfully.";
+
+            var savedWarehouseId = _model.WarehouseId;
+            _model = new CreateLocationFormModel { WarehouseId = savedWarehouseId };
+        }
+        catch (Exception ex)
+        {
+            _error = $"Failed to add location: {ex.Message}";
+        }
+        finally
+        {
+            _submitting = false;
+        }
+    }
+
+    private class CreateLocationFormModel
+    {
+        [Required] public string WarehouseId { get; set; } = string.Empty;
+        [Required] public string Code { get; set; } = string.Empty;
+        public string? Aisle { get; set; }
+        public string? Rack { get; set; }
+        public string? Shelf { get; set; }
+        public string? Bin { get; set; }
+        [Range(0, double.MaxValue, ErrorMessage = "Capacity must be zero or greater.")]
+        public decimal MaxWeightCapacity { get; set; }
+    }
+}

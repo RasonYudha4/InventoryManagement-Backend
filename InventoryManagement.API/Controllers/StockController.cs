@@ -2,7 +2,7 @@ using System.Security.Claims;
 using InventoryManagement.API.Models;
 using InventoryManagement.Application.Features.Stock.Commands.DispatchStock;
 using InventoryManagement.Application.Features.Stock.Commands.ReceiveStock;
-using InventoryManagement.Application.Features.Stock.Queries.GetLowStock;
+using InventoryManagement.Application.Features.Stock.Queries;
 using InventoryManagement.Application.Features.Stock.Queries.GetStockLevelsByLocation;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;

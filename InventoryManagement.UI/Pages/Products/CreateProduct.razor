@@ -1,0 +1,229 @@
+@page "/products/create"
+@using InventoryManagement.UI.Models.Requests
+@using System.ComponentModel.DataAnnotations
+@attribute [Authorize(Roles = "Admin,Manager")]
+@inject IProductService ProductService
+@inject ICategoryService CategoryService
+@inject ISupplierService SupplierService
+@inject NavigationManager Nav
+
+<PageTitle>New Product — Inventory</PageTitle>
+
+<div class="page-header">
+    <div class="page-header-left">
+        <a href="/products" class="btn-back"><span class="bi bi-arrow-left"></span> Products</a>
+        <div>
+            <h1 class="page-title">New Product</h1>
+            <p class="page-subtitle">Add a product to your catalogue</p>
+        </div>
+    </div>
+</div>
+
+@if (_error is not null)
+{
+    <div class="alert-error">
+        <span class="bi bi-exclamation-circle-fill"></span> @_error
+    </div>
+}
+
+<div class="form-card">
+    <EditForm Model="_model" OnValidSubmit="HandleSubmit">
+        <DataAnnotationsValidator />
+
+        <h2 class="form-section-title">Identity</h2>
+        <div class="form-grid">
+            <div class="form-group">
+                <label class="form-label">SKU <span class="required">*</span></label>
+                <InputText class="form-input" @bind-Value="_model.SKU" placeholder="e.g. WIDGET-RED-LG" />
+                <ValidationMessage For="() => _model.SKU" />
+                <span class="form-hint">Must be unique across all products.</span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Name <span class="required">*</span></label>
+                <InputText class="form-input" @bind-Value="_model.Name" placeholder="e.g. Red Widget Large" />
+                <ValidationMessage For="() => _model.Name" />
+            </div>
+
+            <div class="form-group form-group-full">
+                <label class="form-label">Description</label>
+                <InputTextArea class="form-input form-textarea" @bind-Value="_model.Description"
+                               rows="3" placeholder="Optional product description..." />
+            </div>
+        </div>
+
+        <h2 class="form-section-title">Classification</h2>
+        <div class="form-grid">
+            <div class="form-group">
+                <label class="form-label">Category <span class="required">*</span></label>
+                <select class="form-select" @bind="_model.CategoryId" disabled="@_loadingDropdowns">
+                    <option value="">— Select category —</option>
+                    @foreach (var c in _categories)
+                    {
+                        <option value="@c.Id">
+                            @(c.ParentCategoryName is not null ? $"{c.ParentCategoryName} › {c.Name}" : c.Name)
+                        </option>
+                    }
+                </select>
+                <ValidationMessage For="() => _model.CategoryId" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Supplier <span class="required">*</span></label>
+                <select class="form-select" @bind="_model.SupplierId" disabled="@_loadingDropdowns">
+                    <option value="">— Select supplier —</option>
+                    @foreach (var s in _suppliers)
+                    {
+                        <option value="@s.Id">@s.Name</option>
+                    }
+                </select>
+                <ValidationMessage For="() => _model.SupplierId" />
+            </div>
+        </div>
+
+        <h2 class="form-section-title">Pricing</h2>
+        <div class="form-grid">
+            <div class="form-group">
+                <label class="form-label">Unit Cost <span class="required">*</span></label>
+                <div class="input-prefix-group">
+                    <span class="input-prefix">$</span>
+                    <InputNumber class="form-input" @bind-Value="_model.UnitCost" min="0" step="0.01" />
+                </div>
+                <ValidationMessage For="() => _model.UnitCost" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Selling Price <span class="required">*</span></label>
+                <div class="input-prefix-group">
+                    <span class="input-prefix">$</span>
+                    <InputNumber class="form-input" @bind-Value="_model.SellingPrice" min="0" step="0.01" />
+                </div>
+                <ValidationMessage For="() => _model.SellingPrice" />
+            </div>
+
+            @if (_model.SellingPrice > 0 && _model.UnitCost > 0)
+            {
+                <div class="form-group form-group-full">
+                    <div class="margin-preview">
+                        <span>Margin: <strong>@((_model.SellingPrice - _model.UnitCost).ToString("C"))</strong></span>
+                        <span class="muted">
+                            (@(((_model.SellingPrice - _model.UnitCost) / _model.SellingPrice * 100).ToString("F1"))%)
+                        </span>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <h2 class="form-section-title">Replenishment</h2>
+        <div class="form-grid">
+            <div class="form-group">
+                <label class="form-label">Reorder Point <span class="required">*</span></label>
+                <InputNumber class="form-input" @bind-Value="_model.ReorderPoint" min="0" />
+                <ValidationMessage For="() => _model.ReorderPoint" />
+                <span class="form-hint">Alert threshold — low stock warning fires below this quantity.</span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Reorder Quantity <span class="required">*</span></label>
+                <InputNumber class="form-input" @bind-Value="_model.ReorderQuantity" min="1" />
+                <ValidationMessage For="() => _model.ReorderQuantity" />
+                <span class="form-hint">How many units to order when restocking.</span>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="/products" class="btn-secondary">Cancel</a>
+            <button type="submit" class="btn-primary" disabled="@_submitting">
+                @if (_submitting)
+                {
+                    <span class="spinner-sm"></span> <span>Creating...</span>
+                }
+                else
+                {
+                    <span class="bi bi-plus-lg"></span> <span>Create Product</span>
+                }
+            </button>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    private CreateProductFormModel _model = new();
+    private bool _submitting;
+    private string? _error;
+    private List<CategorySummaryDto> _categories = [];
+    private List<SupplierSummaryDto> _suppliers = [];
+    private bool _loadingDropdowns = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var categoriesTask = CategoryService.GetAllCategoriesAsync();
+            var suppliersTask  = SupplierService.GetAllSuppliersAsync();
+            await Task.WhenAll(categoriesTask, suppliersTask);
+
+            _categories = categoriesTask.Result;
+            _suppliers  = suppliersTask.Result;
+        }
+        catch (Exception ex)
+        {
+            _error = $"Failed to load form data: {ex.Message}";
+        }
+        finally
+        {
+            _loadingDropdowns = false;
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        _submitting = true;
+        _error = null;
+
+        try
+        {
+
+            var request = new CreateProductRequest(
+                _model.SKU,
+                _model.Name,
+                _model.Description,
+                _model.UnitCost,
+                _model.SellingPrice,
+                _model.ReorderPoint,
+                _model.ReorderQuantity,
+                _model.CategoryId,
+                _model.SupplierId
+            );
+
+            var id = await ProductService.CreateProductAsync(request);
+            Nav.NavigateTo($"/products/{id}");
+        }
+        catch (Exception ex)
+        {
+            _error = $"Failed to create product: {ex.Message}";
+            _submitting = false;
+        }
+    }
+
+    private class CreateProductFormModel
+    {
+        [Required] public string SKU { get; set; } = string.Empty;
+        [Required] public string Name { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public Guid CategoryId { get; set; }
+        public Guid SupplierId { get; set; }
+
+        [Range(0.01, double.MaxValue, ErrorMessage = "Unit cost must be greater than 0.")]
+        public decimal UnitCost { get; set; }
+
+        [Range(0.01, double.MaxValue, ErrorMessage = "Selling price must be greater than 0.")]
+        public decimal SellingPrice { get; set; }
+
+        [Range(0, int.MaxValue, ErrorMessage = "Reorder point must be zero or greater.")]
+        public int ReorderPoint { get; set; }
+
+        [Range(1, int.MaxValue, ErrorMessage = "Reorder quantity must be at least 1.")]
+        public int ReorderQuantity { get; set; } = 1;
+    }
+}

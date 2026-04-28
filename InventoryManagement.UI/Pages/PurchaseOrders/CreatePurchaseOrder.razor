@@ -1,0 +1,269 @@
+@page "/purchase-orders/create"
+@using InventoryManagement.UI.Models.Requests
+@using System.ComponentModel.DataAnnotations
+@attribute [Authorize(Roles = "Admin,Manager")]
+@inject IPurchaseOrderService PurchaseOrderService
+@inject ISupplierService SupplierService
+@inject NavigationManager Nav
+
+<PageTitle>New Purchase Order — Inventory</PageTitle>
+
+<div class="page-header">
+    <div class="page-header-left">
+        <a href="/purchase-orders" class="btn-back"><span class="bi bi-arrow-left"></span> Purchase Orders</a>
+        <div>
+            <h1 class="page-title">New Purchase Order</h1>
+            <p class="page-subtitle">Create a draft order to send to a supplier</p>
+        </div>
+    </div>
+</div>
+
+@if (_error is not null)
+{
+    <div class="alert-error">
+        <span class="bi bi-exclamation-circle-fill"></span> @_error
+    </div>
+}
+
+<div class="form-card">
+    <EditForm Model="_model" OnValidSubmit="HandleSubmit">
+        <DataAnnotationsValidator />
+
+        <h2 class="form-section-title">Order Details</h2>
+        <div class="form-grid">
+            <div class="form-group">
+                <label class="form-label">Supplier <span class="required">*</span></label>
+                <select class="form-select" @bind="_model.SupplierId" disabled="@_loadingSuppliers">
+                    <option value="">— Select supplier —</option>
+                    @foreach (var s in _suppliers)
+                    {
+                        <option value="@s.Id">@s.Name</option>
+                    }
+                </select>
+                <ValidationMessage For="() => _model.SupplierId" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Expected Delivery Date</label>
+                <InputDate class="form-input" @bind-Value="_model.ExpectedDeliveryDate" />
+            </div>
+
+            <div class="form-group form-group-full">
+                <label class="form-label">Notes</label>
+                <InputTextArea class="form-input form-textarea" @bind-Value="_model.Notes"
+                               rows="3" placeholder="Optional notes for this purchase order..." />
+            </div>
+        </div>
+
+        <h2 class="form-section-title">
+            Order Lines
+            <span class="section-badge">@_model.Items.Count item(s)</span>
+        </h2>
+
+        @if (_model.Items.Any())
+        {
+            <div class="data-card">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Product ID</th>
+                            <th class="col-num">Quantity</th>
+                            <th class="col-num">Unit Cost</th>
+                            <th class="col-num">Line Total</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < _model.Items.Count; i++)
+                        {
+                            var index = i;
+                            var item = _model.Items[index];
+                            <tr>
+                                <td class="col-mono">@item.ProductId</td>
+                                <td class="col-num">@item.Quantity</td>
+                                <td class="col-num">@item.NegotiatedUnitCost.ToString("C")</td>
+                                <td class="col-num">@((item.Quantity * item.NegotiatedUnitCost).ToString("C"))</td>
+                                <td class="col-actions">
+                                    <button type="button" class="btn-link btn-danger-text"
+                                            @onclick="() => RemoveItem(index)">
+                                        Remove
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-footer">
+                            <td colspan="3" class="col-num">Estimated Total</td>
+                            <td class="col-num col-primary">@_estimatedTotal.ToString("C")</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        }
+
+        <div class="line-item-form">
+            <h3 class="line-item-title">Add Line Item</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Product ID <span class="required">*</span></label>
+                    <InputText class="form-input" @bind-Value="_newItem.ProductId"
+                               placeholder="Product GUID" />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Quantity <span class="required">*</span></label>
+                    <InputNumber class="form-input" @bind-Value="_newItem.Quantity" min="1" />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Negotiated Unit Cost <span class="required">*</span></label>
+                    <div class="input-prefix-group">
+                        <span class="input-prefix">$</span>
+                        <InputNumber class="form-input" @bind-Value="_newItem.NegotiatedUnitCost"
+                                     min="0" step="0.01" />
+                    </div>
+                </div>
+
+                <div class="form-group form-group-align-end">
+                    <button type="button" class="btn-secondary" @onclick="AddItem"
+                            disabled="@(!CanAddItem)">
+                        <span class="bi bi-plus-lg"></span> Add Line
+                    </button>
+                </div>
+            </div>
+
+            @if (_lineItemError is not null)
+            {
+                <p class="form-error-inline">@_lineItemError</p>
+            }
+        </div>
+
+        <div class="form-actions">
+            <a href="/purchase-orders" class="btn-secondary">Cancel</a>
+            <button type="submit" class="btn-primary" disabled="@(_submitting || !_model.Items.Any())">
+                @if (_submitting)
+                {
+                    <span class="spinner-sm"></span> <span>Creating Draft...</span>
+                }
+                else
+                {
+                    <span class="bi bi-file-earmark-plus"></span> <span>Create Draft</span>
+                }
+            </button>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    private CreatePurchaseOrderFormModel _model = new();
+    private LineItemFormModel _newItem = new();
+    private bool _submitting;
+    private string? _error;
+    private string? _lineItemError;
+    private List<SupplierSummaryDto> _suppliers = [];
+    private bool _loadingSuppliers = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _suppliers = await SupplierService.GetAllSuppliersAsync();
+        }
+        catch (Exception ex)
+        {
+            _error = $"Failed to load suppliers: {ex.Message}";
+        }
+        finally
+        {
+            _loadingSuppliers = false;
+        }
+    }
+
+    private decimal _estimatedTotal =>
+        _model.Items.Sum(i => i.Quantity * i.NegotiatedUnitCost);
+
+    private bool CanAddItem =>
+        !string.IsNullOrWhiteSpace(_newItem.ProductId) &&
+        _newItem.Quantity > 0 &&
+        _newItem.NegotiatedUnitCost > 0;
+
+    private void AddItem()
+    {
+        _lineItemError = null;
+
+        if (!Guid.TryParse(_newItem.ProductId, out _))
+        {
+            _lineItemError = "Invalid Product ID format.";
+            return;
+        }
+
+        if (_model.Items.Any(i => i.ProductId == _newItem.ProductId))
+        {
+            _lineItemError = "This product is already in the order. Adjust the existing line instead.";
+            return;
+        }
+
+        _model.Items.Add(new LineItemFormModel
+        {
+            ProductId = _newItem.ProductId,
+            Quantity = _newItem.Quantity,
+            NegotiatedUnitCost = _newItem.NegotiatedUnitCost
+        });
+
+        _newItem = new();
+    }
+
+    private void RemoveItem(int index)
+    {
+        if (index >= 0 && index < _model.Items.Count)
+            _model.Items.RemoveAt(index);
+    }
+
+    private async Task HandleSubmit()
+    {
+        _submitting = true;
+        _error = null;
+
+        try
+        {
+            if (!_model.Items.Any())
+                throw new Exception("Please add at least one line item before creating the order.");
+
+            var request = new CreatePurchaseOrderRequest(
+                _model.SupplierId,
+                _model.ExpectedDeliveryDate,
+                _model.Notes,
+                _model.Items.Select(i => new PurchaseOrderLineItemRequest(
+                    Guid.Parse(i.ProductId),
+                    i.Quantity,
+                    i.NegotiatedUnitCost
+                )).ToList()
+            );
+
+            var id = await PurchaseOrderService.CreateDraftAsync(request);
+            Nav.NavigateTo($"/purchase-orders/{id}");
+        }
+        catch (Exception ex)
+        {
+            _error = $"Failed to create purchase order: {ex.Message}";
+            _submitting = false;
+        }
+    }
+
+    private class CreatePurchaseOrderFormModel
+    {
+        [Required] public Guid SupplierId { get; set; }
+        public DateTime? ExpectedDeliveryDate { get; set; }
+        public string? Notes { get; set; }
+        public List<LineItemFormModel> Items { get; set; } = [];
+    }
+
+    private class LineItemFormModel
+    {
+        public string ProductId { get; set; } = string.Empty;
+        public int Quantity { get; set; } = 1;
+        public decimal NegotiatedUnitCost { get; set; }
+    }
+}

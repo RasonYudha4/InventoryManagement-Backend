@@ -1,0 +1,110 @@
+@page "/products"
+@attribute [Authorize]
+@inject IProductService ProductService
+@inject NavigationManager Nav
+
+<PageTitle>Products — Inventory</PageTitle>
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Products</h1>
+        <p class="page-subtitle">Browse and manage your product catalogue</p>
+    </div>
+    <AuthorizeView Roles="Admin,Manager">
+        <Authorized>
+            <a href="/products/create" class="btn-primary">
+                <span class="bi bi-plus-lg"></span> New Product
+            </a>
+        </Authorized>
+    </AuthorizeView>
+</div>
+
+@if (_loading)
+{
+    <div class="state-container">
+        <div class="spinner"></div>
+        <p>Loading products...</p>
+    </div>
+}
+else if (_error is not null)
+{
+    <div class="alert-error">
+        <span class="bi bi-exclamation-circle-fill"></span> @_error
+    </div>
+}
+else if (!_products.Any())
+{
+    <div class="state-container state-empty">
+        <span class="bi bi-box state-icon"></span>
+        <p>No products found.</p>
+        <AuthorizeView Roles="Admin,Manager">
+            <Authorized>
+                <a href="/products/create" class="btn-primary">Add your first product</a>
+            </Authorized>
+        </AuthorizeView>
+    </div>
+}
+else
+{
+    <div class="toolbar">
+        <input class="search-input" type="search" placeholder="Search by name or SKU..."
+               @bind="_search" @bind:event="oninput" />
+        <span class="result-count">@_filtered.Count() result(s)</span>
+    </div>
+
+    <div class="data-card">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>SKU</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Supplier</th>
+                    <th class="col-num">Unit Cost</th>
+                    <th class="col-num">Selling Price</th>
+                    <th class="col-num">Reorder Point</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in _filtered)
+                {
+                    <tr>
+                        <td class="col-mono">@p.SKU</td>
+                        <td class="col-primary">@p.Name</td>
+                        <td>@p.CategoryName</td>
+                        <td>@p.SupplierName</td>
+                        <td class="col-num">@p.UnitCost.ToString("C")</td>
+                        <td class="col-num">@p.SellingPrice.ToString("C")</td>
+                        <td class="col-num">@p.ReorderPoint</td>
+                        <td class="col-actions">
+                            <a href="/products/@p.Id" class="btn-link">View</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private List<ProductDetailDto> _products = [];
+    private string _search = string.Empty;
+    private bool _loading = true;
+    private string? _error;
+
+    private IEnumerable<ProductDetailDto> _filtered =>
+        string.IsNullOrWhiteSpace(_search)
+            ? _products
+            : _products.Where(p =>
+                p.Name.Contains(_search, StringComparison.OrdinalIgnoreCase) ||
+                p.SKU.Contains(_search, StringComparison.OrdinalIgnoreCase));
+
+    protected override async Task OnInitializedAsync()
+    {
+        // NOTE: A GetAllProducts query is needed in the Application layer.
+        // This page will be wired up once that query is implemented.
+        // For now, rendering an empty state gracefully.
+        _loading = false;
+    }
+}

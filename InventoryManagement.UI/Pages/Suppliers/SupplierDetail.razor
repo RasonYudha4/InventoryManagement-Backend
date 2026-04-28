@@ -1,0 +1,116 @@
+@page "/suppliers/{Id:guid}"
+@attribute [Authorize(Roles = "Admin,Manager")]
+@inject ISupplierService SupplierService
+
+<PageTitle>@(_supplier?.Name ?? "Supplier") — Inventory</PageTitle>
+
+@if (_loading)
+{
+    <div class="state-container">
+        <div class="spinner"></div>
+        <p>Loading supplier...</p>
+    </div>
+}
+else if (_error is not null)
+{
+    <div class="page-header">
+        <a href="/suppliers" class="btn-back"><span class="bi bi-arrow-left"></span> Suppliers</a>
+    </div>
+    <div class="alert-error">
+        <span class="bi bi-exclamation-circle-fill"></span> @_error
+    </div>
+}
+else if (_supplier is not null)
+{
+    <div class="page-header">
+        <div class="page-header-left">
+            <a href="/suppliers" class="btn-back"><span class="bi bi-arrow-left"></span> Suppliers</a>
+            <div>
+                <h1 class="page-title">@_supplier.Name</h1>
+                <p class="page-subtitle">
+                    @if (_supplier.IsActive)
+                    {
+                        <span class="badge badge-success">Active</span>
+                    }
+                    else
+                    {
+                        <span class="badge badge-neutral">Inactive</span>
+                    }
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="detail-grid">
+        <div class="detail-card">
+            <h2 class="detail-card-title">Contact Information</h2>
+            <dl class="detail-list">
+                <div class="detail-row">
+                    <dt>Contact Name</dt>
+                    <dd>@_supplier.ContactName</dd>
+                </div>
+                <div class="detail-row">
+                    <dt>Email</dt>
+                    <dd>
+                        <a href="mailto:@_supplier.Email" class="btn-link">@_supplier.Email</a>
+                    </dd>
+                </div>
+                <div class="detail-row">
+                    <dt>Phone</dt>
+                    <dd>@(_supplier.Phone ?? "—")</dd>
+                </div>
+            </dl>
+        </div>
+
+        <div class="detail-card">
+            <h2 class="detail-card-title">Business Details</h2>
+            <dl class="detail-list">
+                <div class="detail-row">
+                    <dt>Address</dt>
+                    <dd>@(_supplier.Address ?? "—")</dd>
+                </div>
+                <div class="detail-row">
+                    <dt>Tax ID</dt>
+                    <dd class="col-mono">@(_supplier.TaxId ?? "—")</dd>
+                </div>
+                <div class="detail-row">
+                    <dt>Status</dt>
+                    <dd>
+                        @if (_supplier.IsActive)
+                        {
+                            <span class="badge badge-success">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-neutral">Inactive</span>
+                        }
+                    </dd>
+                </div>
+            </dl>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private SupplierDetailDto? _supplier;
+    private bool _loading = true;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _supplier = await SupplierService.GetSupplierByIdAsync(Id);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Failed to load supplier: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}
